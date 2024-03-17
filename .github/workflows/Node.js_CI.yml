@@ -36,10 +36,3 @@ jobs:
       run: npm run lint # Führen Sie ESLint aus
     - name: Run Tests
       run: npm test
-  deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Deploy 🚀
-        uses: JamesIves/github-pages-deploy-action@v4
-        with:
-          folder: dist # The folder the action should deploy.
