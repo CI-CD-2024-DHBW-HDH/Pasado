@@ -1,0 +1,32 @@
+name: Deploy to Kubernetes Cluster
+
+on:
+  push:
+    branches:
+      - main # Oder den Branch, den Sie verwenden möchten
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Kubectl
+        uses: azure/setup-kubectl@v1
+
+      - name: Set up Kubernetes configuration
+        uses: azure/k8s-set-context@v1
+        with:
+          method: kubeconfig
+          kubeconfig: ${{ secrets.KUBECONFIG }}
+
+      - name: Create namespace
+        run: kubectl create namespace pasado --dry-run=client -o yaml | kubectl apply -f -
+      - name: Delete existing secret (if exists)
+        run: kubectl delete secret regcred --ignore-not-found=true
+      # Deployment
+      - name: Deploy to Kubernetes
+        run: |
+          kubectl create secret docker-registry regcred --docker-server=ghcr.io --docker-username=MichaelBehringer --docker-password=${{ secrets.GITHUB }} --docker-email=michabehringer@gmail.com
+          kubectl apply -f kubernetes/deployment.yaml --namespace=pasado
+          kubectl apply -f kubernetes/service.yaml --namespace=pasado
